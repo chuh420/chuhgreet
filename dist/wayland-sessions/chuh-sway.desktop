@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Sway
+Comment=Sway with its own setup
+Exec=/home/chuh/.local/bin/session-sway
+Type=Application
+DesktopNames=sway

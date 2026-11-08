@@ -1,0 +1,2 @@
+default_user = "chuh"
+hide = ["hyprland", "hyprland-uwsm", "sway"]

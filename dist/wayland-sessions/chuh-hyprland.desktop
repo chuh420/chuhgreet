@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Hyprland
+Comment=Hyprland with chuhshell
+Exec=/home/chuh/.local/bin/session-hyprland
+Type=Application
+DesktopNames=Hyprland
