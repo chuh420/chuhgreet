@@ -37,7 +37,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     result
 }
 
-fn run(terminal: &mut ratatui::DefaultTerminal, app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
+fn run(
+    terminal: &mut ratatui::DefaultTerminal,
+    app: &mut App,
+) -> Result<(), Box<dyn std::error::Error>> {
     while !app.quit {
         terminal.draw(|f| ui::draw(f, app))?;
         if !event::poll(Duration::from_secs(1))? {

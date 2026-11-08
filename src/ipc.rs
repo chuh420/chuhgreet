@@ -84,7 +84,8 @@ impl Greetd {
                         if !note.is_empty() {
                             self.notes.push(note);
                         }
-                        response = self.request(Request::PostAuthMessageResponse { response: None })?;
+                        response =
+                            self.request(Request::PostAuthMessageResponse { response: None })?;
                     }
                 },
             }

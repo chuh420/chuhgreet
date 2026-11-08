@@ -21,9 +21,19 @@ impl Session {
         Self {
             id: "shell".into(),
             name: "shell".into(),
-            exec: vec!["/bin/sh".into(), "-c".into(), "exec \"${SHELL:-/bin/sh}\" -l".into()],
+            exec: Vec::new(),
             desktop_names: None,
             kind: Kind::Tty,
+        }
+    }
+
+    pub fn command(&self, user: &str) -> Vec<String> {
+        match self.kind {
+            Kind::Wayland => self.exec.clone(),
+            Kind::Tty => {
+                let passwd = fs::read_to_string("/etc/passwd").unwrap_or_default();
+                vec![login_shell(&passwd, user), "-l".into()]
+            }
         }
     }
 
@@ -56,7 +66,8 @@ pub fn load(dirs: &[PathBuf], hide: &[String]) -> Vec<Session> {
             let Some(session) = read(&path) else {
                 continue;
             };
-            if hide.iter().any(|h| h == &session.id) || sessions.iter().any(|s| s.id == session.id) {
+            if hide.iter().any(|h| h == &session.id) || sessions.iter().any(|s| s.id == session.id)
+            {
                 continue;
             }
             sessions.push(session);
@@ -108,6 +119,17 @@ pub fn parse(id: &str, text: &str) -> Option<Session> {
         desktop_names,
         kind: Kind::Wayland,
     })
+}
+
+pub fn login_shell(passwd: &str, user: &str) -> String {
+    passwd
+        .lines()
+        .filter_map(|line| {
+            let fields: Vec<&str> = line.split(':').collect();
+            (fields.len() >= 7 && fields[0] == user).then(|| fields[6].trim().to_string())
+        })
+        .find(|shell| shell.starts_with('/') && !shell.contains(char::is_whitespace))
+        .unwrap_or_else(|| "/bin/sh".into())
 }
 
 pub fn split(line: &str) -> Vec<String> {
@@ -175,8 +197,24 @@ mod tests {
     }
 
     #[test]
+    fn finds_login_shell() {
+        let passwd = "root:x:0:0::/root:/usr/bin/bash\nchuh:x:1000:1000::/home/chuh:/usr/bin/zsh\n";
+        assert_eq!(login_shell(passwd, "chuh"), "/usr/bin/zsh");
+        assert_eq!(login_shell(passwd, "nobody"), "/bin/sh");
+        assert_eq!(login_shell("x:x:1:1::/:", "x"), "/bin/sh");
+        assert_eq!(
+            Session::shell().command("chuh").last().map(String::as_str),
+            Some("-l")
+        );
+    }
+
+    #[test]
     fn env_contains_desktop() {
-        let s = parse("sway", "[Desktop Entry]\nName=Sway\nExec=sway\nDesktopNames=sway\n").unwrap();
+        let s = parse(
+            "sway",
+            "[Desktop Entry]\nName=Sway\nExec=sway\nDesktopNames=sway\n",
+        )
+        .unwrap();
         assert!(s.env().contains(&"XDG_CURRENT_DESKTOP=sway".to_string()));
         assert!(s.env().contains(&"XDG_SESSION_TYPE=wayland".to_string()));
     }

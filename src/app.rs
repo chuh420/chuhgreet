@@ -98,7 +98,11 @@ impl App {
             .session
             .and_then(|id| sessions.iter().position(|s| s.id == id))
             .unwrap_or(0);
-        let focus = if user.is_empty() { Focus::User } else { Focus::Secret };
+        let focus = if user.is_empty() {
+            Focus::User
+        } else {
+            Focus::Secret
+        };
         Self {
             host: hostname(),
             user,
@@ -241,7 +245,10 @@ impl App {
             }
             Ok(Step::Prompt { text, secret }) => {
                 self.prompt = Some((lower(text.trim().trim_end_matches(':')), secret));
-                self.status = notes.last().map(|n| Status::Info(lower(n))).unwrap_or(Status::Idle);
+                self.status = notes
+                    .last()
+                    .map(|n| Status::Info(lower(n)))
+                    .unwrap_or(Status::Idle);
             }
             Ok(Step::Ready) => self.launch(),
         }
@@ -255,7 +262,10 @@ impl App {
         }
         .save(&self.state_path);
         self.status = Status::Info(format!("starting {}", session.name.to_lowercase()));
-        match self.auth.start(session.exec.clone(), session.env()) {
+        match self
+            .auth
+            .start(session.command(self.user.trim()), session.env())
+        {
             Ok(Step::Ready) => self.quit = true,
             Ok(Step::Failed(e)) => self.reset(Some(lower(&e))),
             Ok(Step::Prompt { .. }) => self.reset(Some("unexpected prompt".into())),

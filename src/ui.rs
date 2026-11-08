@@ -27,21 +27,29 @@ pub fn draw(frame: &mut Frame, app: &App) {
     let clock_text = vec![
         Line::from(Span::styled(
             now.format("%H:%M").to_string(),
-            Style::default().fg(Color::White).add_modifier(Modifier::BOLD),
+            Style::default()
+                .fg(Color::White)
+                .add_modifier(Modifier::BOLD),
         )),
         Line::from(Span::styled(
             now.format("%A, %-d %B").to_string().to_lowercase(),
             Style::default().fg(DIM),
         )),
     ];
-    frame.render_widget(Paragraph::new(clock_text).alignment(Alignment::Center), clock);
+    frame.render_widget(
+        Paragraph::new(clock_text).alignment(Alignment::Center),
+        clock,
+    );
 
     let card = center(card, 46);
     let block = Block::default()
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
         .border_style(Style::default().fg(if app.busy { Color::Yellow } else { DIM }))
-        .title(Span::styled(format!(" {} ", app.host), Style::default().fg(ACCENT)))
+        .title(Span::styled(
+            format!(" {} ", app.host),
+            Style::default().fg(ACCENT),
+        ))
         .title_alignment(Alignment::Center);
     let inner = block.inner(card);
     frame.render_widget(block, card);
@@ -59,13 +67,25 @@ pub fn draw(frame: &mut Frame, app: &App) {
 
     let in_auth = app.in_auth();
     frame.render_widget(
-        field("user", &app.user, !in_auth && app.focus == Focus::User, in_auth),
+        field(
+            "user",
+            &app.user,
+            !in_auth && app.focus == Focus::User,
+            in_auth,
+        ),
         rows[1],
     );
     let name = app.session().name.to_lowercase();
     let session_focus = !in_auth && app.focus == Focus::Session;
-    let session_text = if session_focus { format!("‹ {name} ›") } else { name };
-    frame.render_widget(field("session", &session_text, session_focus, in_auth), rows[2]);
+    let session_text = if session_focus {
+        format!("‹ {name} ›")
+    } else {
+        name
+    };
+    frame.render_widget(
+        field("session", &session_text, session_focus, in_auth),
+        rows[2],
+    );
 
     let (label, masked) = match &app.prompt {
         Some((text, secret)) => (text.clone(), *secret),
@@ -126,7 +146,11 @@ fn field<'a>(label: &str, value: &str, focused: bool, muted: bool) -> Paragraph<
     } else {
         Style::default().fg(DIM)
     };
-    let value_style = if muted { Style::default().fg(DIM) } else { Style::default().fg(Color::White) };
+    let value_style = if muted {
+        Style::default().fg(DIM)
+    } else {
+        Style::default().fg(Color::White)
+    };
     let width = LABEL_WIDTH.max(label.chars().count() + 1);
     Paragraph::new(Line::from(vec![
         Span::styled(marker.to_string(), Style::default().fg(ACCENT)),
