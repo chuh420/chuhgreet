@@ -83,6 +83,7 @@ pub struct App {
     pub busy: bool,
     pub preview: bool,
     pub quit: bool,
+    pub redraw: bool,
     state_path: PathBuf,
     auth: Box<dyn Auth>,
 }
@@ -115,6 +116,7 @@ impl App {
             busy: false,
             preview,
             quit: false,
+            redraw: false,
             state_path: config.state,
             auth,
         }
@@ -134,6 +136,7 @@ impl App {
             KeyCode::F(2) => self.power("reboot"),
             KeyCode::F(3) => self.power("poweroff"),
             KeyCode::Char('c') if ctrl && self.preview => self.quit = true,
+            KeyCode::Char('l') if ctrl => self.redraw = true,
             KeyCode::Char('u') if ctrl => {
                 if let Some(f) = self.field() {
                     f.clear();

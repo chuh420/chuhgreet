@@ -111,6 +111,7 @@ pub fn draw(frame: &mut Frame, app: &App) {
         "←/→ session",
         "enter login",
         "esc clear",
+        "ctrl+l redraw",
         "f2 reboot",
         "f3 poweroff",
     ];

@@ -42,6 +42,10 @@ fn run(
     app: &mut App,
 ) -> Result<(), Box<dyn std::error::Error>> {
     while !app.quit {
+        if app.redraw {
+            terminal.clear()?;
+            app.redraw = false;
+        }
         terminal.draw(|f| ui::draw(f, app))?;
         if !event::poll(Duration::from_secs(1))? {
             continue;
